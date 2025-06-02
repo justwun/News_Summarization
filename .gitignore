@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment
+newsum/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs and local data
+*.log
+*.csv
+*.tsv
+
+# Model files
+*.h5
+*.pt
+*.pth
+*.onnx
+*.ckpt
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Editor directories and settings
+.vscode/
+.idea/
+
+# Hugging Face cache (optional)
+~/.cache/huggingface/
+
+vit5_finetuned_2/
