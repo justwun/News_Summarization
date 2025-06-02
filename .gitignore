@@ -33,3 +33,8 @@ Thumbs.db
 ~/.cache/huggingface/
 
 vit5_finetuned_2/
+
+all-files.txt
+all-objects.txt
+
+Train.ipynb
