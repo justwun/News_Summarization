@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News Summarizer</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --primary: #0066ff;
+      --primary-hover: #0052cc;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --radius: 1rem;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      --transition: 0.25s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 700px;
+      padding: 2rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      padding: 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: var(--radius);
+      resize: vertical;
+      font-size: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    label {
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 150px;
+    }
+
+    select {
+      margin-top: 0.25rem;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: var(--radius);
+      font-size: 1rem;
+    }
+
+    button {
+      background: var(--primary);
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background var(--transition);
+      margin-top: 0.5rem;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    button:not(:disabled):hover {
+      background: var(--primary-hover);
+    }
+
+    #loadingMessage {
+      margin-top: 1rem;
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    #resultArea {
+      margin-top: 1.5rem;
+      white-space: pre-wrap;
+      background: #f9fafb;
+      padding: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid #e5e7eb;
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Tóm tắt Tin tức</h1>
+
+    <textarea id="inputText" placeholder="Nhập nội dung tin tức..."></textarea>
+
+    <div class="controls">
+      <label>Ngôn ngữ gốc
+        <select id="sourceLang">
+          <option value="vi">Tiếng Việt</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+
+      <label>Ngôn ngữ kết quả
+        <select id="targetLang">
+          <option value="vi">Tiếng Việt</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+
+      <label>Độ dài tóm tắt
+        <select id="summaryLength">
+          <option value="sieu ngan">Siêu ngắn</option>
+          <option value="ngan">Ngắn</option>
+          <option value="binh thuong" selected>Bình thường</option>
+        </select>
+      </label>
+    </div>
+
+    <button onclick="summarize()">Tóm tắt</button>
+
+    <p id="loadingMessage" style="display: none;">⏳ Đang xử lý...</p>
+    <p id="resultArea"></p>
+
+    <footer>© 2025 News Summarizer</footer>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
