@@ -22,7 +22,7 @@ def custom_jsonify(data):
     )
 
 # Load mô hình ViT5 đã fine-tuned (hoặc thay bằng ./vit5_finetuned_2 nếu bạn đã train)
-summarize_model_path = "./vit5_finetuned_2"
+summarize_model_path = "quancbum2004/vit5-news-summarizer"
 summarize_tokenizer = AutoTokenizer.from_pretrained(summarize_model_path)
 summarize_model = AutoModelForSeq2SeqLM.from_pretrained(summarize_model_path).to(device)
 
