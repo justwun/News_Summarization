@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from typing import Dict
-
+from typing import Dict, List
+import re
 
 # Thiết bị sử dụng: GPU nếu có, không thì dùng CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -28,7 +28,7 @@ def translate(text: str, tokenizer, model, max_length=512) -> str:
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 def summarize_text(text: str, model, tokenizer, max_length=64, min_length=30) -> str:
-    """Tóm tắt văn bản"""
+    """Tóm tắt văn bản ngắn"""
     inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512).to(device)
     summary_ids = model.generate(
         input_ids=inputs["input_ids"],
@@ -42,14 +42,26 @@ def summarize_text(text: str, model, tokenizer, max_length=64, min_length=30) ->
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
     return clean_text(summary)
 
-def get_summary_length_params(length_option: str):
-    """Chuyển đổi lựa chọn độ dài thành tham số cho mô hình"""
-    length_option = length_option.lower()
-    if length_option == "sieu ngan":
-        return {"max_length": 30, "min_length": 10}
-    elif length_option == "ngan":
-        return {"max_length": 50, "min_length": 20}
-    elif length_option == "binh thuong":
-        return {"max_length": 80, "min_length": 30}
-    else:
-        return {"max_length": 64, "min_length": 30}
+def chunk_text(text: str, max_words: int = 400) -> List[str]:
+    """Chia văn bản thành các đoạn nhỏ theo số từ"""
+    words = text.split()
+    return [" ".join(words[i:i + max_words]) for i in range(0, len(words), max_words)]
+
+def summarize_long_text(
+    text: str,
+    model,
+    tokenizer,
+    max_length: int = 64,
+    min_length: int = 30,
+    max_chunks: int = 2
+) -> str:
+    """Tóm tắt văn bản dài bằng cách chia nhỏ và ghép tóm tắt"""
+    chunks = chunk_text(text, max_words=400)
+    if len(chunks) > max_chunks:
+        chunks = chunks[:max_chunks]  # Giới hạn số lượng chunk để kiểm soát độ dài output
+
+    summaries = [
+        summarize_text(chunk, model, tokenizer, max_length=max_length, min_length=min_length)
+        for chunk in chunks
+    ]
+    return "\n".join(summaries)
