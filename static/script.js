@@ -2,7 +2,6 @@ async function summarize() {
     const text = document.getElementById("inputText").value;
     const sourceLang = document.getElementById("sourceLang").value;
     const targetLang = document.getElementById("targetLang").value;
-    const summaryLength = document.getElementById("summaryLength").value;
 
     const resultArea = document.getElementById("resultArea");
     const loadingMessage = document.getElementById("loadingMessage");
@@ -30,8 +29,7 @@ async function summarize() {
             body: JSON.stringify({
                 text: text,
                 source_lang: sourceLang,
-                target_lang: targetLang,
-                summary_length: summaryLength
+                target_lang: targetLang
             })
         });
 
@@ -44,5 +42,39 @@ async function summarize() {
     } finally {
         loadingMessage.style.display = "none";
         button.disabled = false;
+    }
+}
+
+async function loadHistory() {
+    const historyArea = document.getElementById("historyArea");
+    historyArea.innerHTML = "<p>📚 Đang tải lịch sử...</p>";
+
+    try {
+        const response = await fetch("/history");
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            historyArea.innerHTML = "<p>⚠️ Không lấy được dữ liệu lịch sử.</p>";
+            return;
+        }
+
+        if (data.length === 0) {
+            historyArea.innerHTML = "<p>🕘 Chưa có bản tóm tắt nào được lưu.</p>";
+            return;
+        }
+
+        const html = data.map(item => `
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f1f5f9; border-radius: 0.75rem;">
+              <p><strong>📝 Gốc (${item.source_lang}):</strong> ${item.input_text}</p>
+              <p><strong>🔍 Tóm tắt (${item.target_lang}):</strong> ${item.summary_text}</p>
+              <p style="font-size: 0.85rem; color: gray;">⏱ ${item.timestamp}</p>
+            </div>
+        `).join("");
+
+        historyArea.innerHTML = html;
+
+    } catch (error) {
+        console.error("History error:", error);
+        historyArea.innerHTML = "<p>❌ Lỗi khi tải lịch sử.</p>";
     }
 }
