@@ -122,11 +122,39 @@
       border: 1px solid #e5e7eb;
     }
 
-    footer {
+    /* Thêm style cho lịch sử */
+    #historyArea {
       margin-top: 2rem;
-      text-align: center;
-      font-size: 0.8rem;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: var(--radius);
+      padding: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    #historyArea h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .history-item {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.5rem 0;
+    }
+    .history-item:last-child {
+      border-bottom: none;
+    }
+    .history-meta {
+      font-size: 0.85rem;
       color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+    .history-input {
+      font-weight: 600;
+    }
+    .history-summary {
+      margin-left: 1rem;
+      white-space: pre-wrap;
+      color: #333;
     }
   </style>
 </head>
@@ -150,24 +178,105 @@
           <option value="en">English</option>
         </select>
       </label>
-
-      <label>Độ dài tóm tắt
-        <select id="summaryLength">
-          <option value="sieu ngan">Siêu ngắn</option>
-          <option value="ngan">Ngắn</option>
-          <option value="binh thuong" selected>Bình thường</option>
-        </select>
-      </label>
     </div>
 
     <button onclick="summarize()">Tóm tắt</button>
+    <button onclick="loadHistory()" style="margin-left: 1rem;">📜 Xem lịch sử</button>
 
     <p id="loadingMessage" style="display: none;">⏳ Đang xử lý...</p>
     <p id="resultArea"></p>
 
+    <div id="historyArea" style="display:none;">
+      <h2>🕘 Lịch sử gần đây</h2>
+      <div id="historyList"></div>
+    </div>
+
     <footer>© 2025 News Summarizer</footer>
   </div>
 
-  <script src="/static/script.js"></script>
+  <script>
+    async function summarize() {
+      const text = document.getElementById("inputText").value;
+      const sourceLang = document.getElementById("sourceLang").value;
+      const targetLang = document.getElementById("targetLang").value;
+
+      const payload = {
+        text,
+        source_lang: sourceLang,
+        target_lang: targetLang
+      };
+
+      document.getElementById("loadingMessage").style.display = "block";
+      document.getElementById("resultArea").innerText = "";
+      document.getElementById("historyArea").style.display = "none";
+
+      try {
+        const response = await fetch("/summarize_translate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.summary) {
+          document.getElementById("resultArea").innerText = result.summary;
+        } else {
+          document.getElementById("resultArea").innerText = result.error || "Có lỗi xảy ra.";
+        }
+      } catch (error) {
+        document.getElementById("resultArea").innerText = "Lỗi kết nối đến server.";
+      }
+
+      document.getElementById("loadingMessage").style.display = "none";
+    }
+
+    async function loadHistory() {
+      document.getElementById("loadingMessage").style.display = "block";
+      document.getElementById("resultArea").innerText = "";
+      document.getElementById("historyList").innerHTML = "";
+
+      try {
+        const response = await fetch("/history");
+        const data = await response.json();
+
+        if (Array.isArray(data)) {
+          if (data.length === 0) {
+            document.getElementById("historyList").innerText = "Không có lịch sử nào.";
+          } else {
+            const html = data.map(item => `
+              <div class="history-item">
+                <div class="history-meta">
+                  [${item.timestamp}] ${item.source_lang.toUpperCase()} → ${item.target_lang.toUpperCase()}
+                </div>
+                <div class="history-input"><strong>Nội dung gốc:</strong> ${escapeHtml(item.input_text)}</div>
+                <div class="history-summary"><strong>Tóm tắt:</strong> ${escapeHtml(item.summary_text)}</div>
+              </div>
+            `).join("");
+            document.getElementById("historyList").innerHTML = html;
+          }
+          document.getElementById("historyArea").style.display = "block";
+        } else {
+          document.getElementById("historyList").innerText = "Lỗi tải lịch sử.";
+        }
+      } catch (error) {
+        document.getElementById("historyList").innerText = "Lỗi kết nối đến server.";
+      }
+
+      document.getElementById("loadingMessage").style.display = "none";
+    }
+
+    // Hàm escape HTML để tránh lỗi hiển thị hoặc bảo mật XSS
+    function escapeHtml(text) {
+      if (!text) return "";
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
 </body>
 </html>
