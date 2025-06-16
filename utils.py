@@ -22,10 +22,10 @@ def clean_text(text: str) -> str:
     return text.strip()
 
 def translate(text: str, tokenizer, model, max_length=512) -> str:
-    """Dịch văn bản"""
     inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=max_length).to(device)
     outputs = model.generate(**inputs, max_length=128, num_beams=4, early_stopping=True)
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+    translated = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return translated
 
 def summarize_text(text: str, model, tokenizer, max_length=64, min_length=30) -> str:
     """Tóm tắt văn bản ngắn"""
@@ -55,13 +55,16 @@ def summarize_long_text(
     min_length: int = 30,
     max_chunks: int = 2
 ) -> str:
-    """Tóm tắt văn bản dài bằng cách chia nhỏ và ghép tóm tắt"""
     chunks = chunk_text(text, max_words=400)
-    if len(chunks) > max_chunks:
-        chunks = chunks[:max_chunks]  # Giới hạn số lượng chunk để kiểm soát độ dài output
+    too_long = len(chunks) > max_chunks
+    if too_long:
+        chunks = chunks[:max_chunks]
 
     summaries = [
         summarize_text(chunk, model, tokenizer, max_length=max_length, min_length=min_length)
         for chunk in chunks
     ]
-    return "\n".join(summaries)
+    result = "\n".join(summaries)
+    if too_long:
+        result += "\n\n⚠️ Văn bản quá dài, chỉ tóm tắt một phần."
+    return result
