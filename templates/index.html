@@ -8,16 +8,157 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
-    /* Bạn giữ nguyên phần CSS hiện tại của bạn ở đây */
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --primary: #1d4ed8;
+      --primary-dark: #1e40af;
+      --text: #111827;
+      --muted: #6b7280;
+      --radius: 0.75rem;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      --transition: 0.3s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: var(--card);
+      width: 100%;
+      max-width: 800px;
+      padding: 2rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1.25rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: var(--radius);
+      resize: vertical;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    label {
+      flex: 1 1 200px;
+      font-size: 0.9rem;
+    }
+
+    select {
+      width: 100%;
+      margin-top: 0.3rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid #d1d5db;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      padding: 0.75rem 1.25rem;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background var(--transition);
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #resultArea, #loadingMessage {
+      margin-top: 1rem;
+    }
+
+    #resultArea {
+      white-space: pre-wrap;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 1rem;
+      border-radius: var(--radius);
+    }
+
+    #historyArea {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #f9fafb;
+      border-radius: var(--radius);
+      border: 1px solid #e5e7eb;
+      display: none;
+    }
+
+    #authArea {
+      margin-top: 2rem;
+    }
+
+    #authArea input {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: var(--radius);
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Tóm tắt Tin tức</h1>
 
-    <div id="usageGuide">
-      <b>Bạn có thể sử dụng chức năng tóm tắt và dịch tin tức ngay mà không cần đăng nhập.</b><br>
-      Nếu muốn <b>xem lại lịch sử</b> các lần tóm tắt/dịch, vui lòng <b>đăng nhập hoặc đăng ký tài khoản</b>.
+    <div id="loginStatus" style="margin-bottom: 1rem;">👤 Bạn đang ở chế độ khách.</div>
+
+    <div id="loginIntro" style="background: #e0f2fe; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 5px solid #0284c7;">
+      <p><strong>🔐 Đăng nhập hoặc Đăng ký để:</strong></p>
+      <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+        <li>✅ Lưu lại các bản tóm tắt & bản dịch bạn đã thực hiện</li>
+        <li>📜 Xem lại lịch sử bất cứ lúc nào</li>
+      </ul>
+    </div>
+
+    <div id="authArea">
+      <input type="text" id="username" placeholder="Tên đăng nhập" />
+      <input type="password" id="password" placeholder="Mật khẩu" />
+      <button onclick="login()">Đăng nhập</button>
+      <button onclick="register()">Đăng ký</button>
+      <button onclick="logout()" style="display:none;" id="logoutBtn">Đăng xuất</button>
     </div>
 
     <textarea id="inputText" placeholder="Nhập nội dung tin tức..."></textarea>
@@ -38,35 +179,21 @@
       </label>
     </div>
 
-    <button onclick="summarize()">Tóm tắt</button>
+    <button onclick="summarize()" id="summarizeBtn">Tóm tắt</button>
     <button onclick="loadHistory()" id="historyBtn" style="margin-left: 1rem;" disabled>📜 Xem lịch sử</button>
 
-    <p id="loadingMessage" style="display: none;">⏳ Đang xử lý...</p>
-    <p id="resultArea"></p>
+    <p id="loadingMessage" style="display:none;">⏳ Đang xử lý...</p>
+    <div id="resultArea"></div>
 
-    <div id="historyArea" style="display:none;">
-      <h2>🕘 Lịch sử gần đây</h2>
-      <div id="historyList"></div>
-    </div>
+<div id="historyArea">
+  <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">📜 Lịch sử tóm tắt & dịch gần đây</h2>
+  <div id="historyList"></div>
+</div>
 
-    <div id="authArea">
-      <input type="text" id="username" placeholder="Tên đăng nhập" />
-      <input type="password" id="password" placeholder="Mật khẩu" />
-      <button onclick="login()">Đăng nhập</button>
-      <button onclick="register()">Đăng ký</button>
-      <button onclick="logout()" style="display:none;" id="logoutBtn">Đăng xuất</button>
-      <span id="loginStatus"></span>
-    </div>
-
-    <div id="authChoice">
-      <button onclick="chooseGuest()">Dùng ngay không cần tài khoản</button>
-      <button onclick="showLoginForm()">Đăng nhập/Đăng ký để lưu lịch sử</button>
-    </div>
 
     <footer>© 2025 News Summarizer</footer>
   </div>
 
-  <!-- Gắn JavaScript riêng -->
-  <script src="script.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
