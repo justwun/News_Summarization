@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False  
 app.secret_key = "T!q9Xv#Lr2@z*GmN7Y^fWs0eJk$Up&Eb"
 
-# Cấu hình giới hạn truy cập API
+
 limiter = Limiter(
     get_remote_address,
     app=app,
@@ -47,7 +47,7 @@ summarize_tokenizer = AutoTokenizer.from_pretrained(summarize_model_path)
 summarize_model = AutoModelForSeq2SeqLM.from_pretrained(summarize_model_path).to(device)
 
 @app.route("/")
-def home():
+def index():
     return render_template("index.html")
 
 @app.route("/login", methods=["POST"])
