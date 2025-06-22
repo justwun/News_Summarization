@@ -3,14 +3,14 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from typing import Dict, List
 import re
 
-# Thiết bị sử dụng: GPU nếu có, không thì dùng CPU
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load model dịch Anh -> Việt
+
 en_vi_tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-vi")
 en_vi_model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-en-vi").to(device)
 
-# Load model dịch Việt -> Anh
+
 vi_en_tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-vi-en")
 vi_en_model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-vi-en").to(device)
 
