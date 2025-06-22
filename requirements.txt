@@ -8,3 +8,6 @@ numpy>=1.24.0
 sentencepiece
 sacremoses
 protobuf
+sqlalachemy
+Flask-Limiter
+
