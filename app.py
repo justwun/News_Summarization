@@ -57,7 +57,7 @@ def login():
         username = data.get("username", "").strip()
         password = data.get("password", "")
         if not username or not password:
-            return error_response("Username and password are required.", 400)
+            return error_response("Tên đăng nhập và mật khẩu là bắt buộc.", 400)
 
         db = SessionLocal()
         user = db.query(User).filter_by(username=username).first()
@@ -65,15 +65,15 @@ def login():
 
         if user and check_password_hash(user.password_hash, password):
             session["user_id"] = user.id
-            return custom_jsonify({"message": "Login successful."})
-        return error_response("Invalid username or password.", 401)
+            return custom_jsonify({"message": "Đăng nhập thành công."})
+        return error_response("Tên đăng nhập hoặc mật khẩu không đúng.", 401)
     except Exception:
-        return error_response("An error occurred during login.", 500)
+        return error_response("Đã xảy ra lỗi trong quá trình đăng nhập.", 500)
 
 @app.route("/logout", methods=["POST"])
 def logout():
     session.pop("user_id", None)
-    return custom_jsonify({"message": "Logged out."})
+    return custom_jsonify({"message": "Đã đăng xuất."})
 
 @app.route("/summarize_translate", methods=["POST"])
 @limiter.limit("5 per minute")
@@ -86,7 +86,7 @@ def summarize_translate():
         max_chunks = int(data.get("max_chunks", 2))
 
         if not text:
-            return error_response("No input text provided.", 400)
+            return error_response("Không có văn bản đầu vào được cung cấp.", 400)
 
         default_summary_params = {"max_length": 64, "min_length": 30}
 
@@ -134,15 +134,15 @@ def summarize_translate():
         return custom_jsonify({"summary": summary})
 
     except SQLAlchemyError:
-        return error_response("Database error occurred during summarization.", 500)
+        return error_response("Lỗi cơ sở dữ liệu xảy ra trong quá trình tóm tắt.", 500)
     except Exception:
-        return error_response("Failed to summarize text. Please check your input.", 500)
+        return error_response("Không thể tóm tắt văn bản. Vui lòng kiểm tra đầu vào của bạn.", 500)
 
 @app.route("/history", methods=["GET"])
 def get_history():
     user_id = session.get("user_id")
     if not user_id:
-        return error_response("Login required to view history.", 401)
+        return error_response("Cần đăng nhập để xem lịch sử.", 401)
     try:
         db = SessionLocal()
         histories = db.query(SummaryHistory).filter_by(user_id=user_id).order_by(SummaryHistory.id.desc()).limit(20).all()
@@ -162,9 +162,9 @@ def get_history():
         return custom_jsonify(result)
 
     except SQLAlchemyError:
-        return error_response("Database error while retrieving history.", 500)
+        return error_response("Lỗi cơ sở dữ liệu khi truy xuất lịch sử.", 500)
     except Exception:
-        return error_response("Unexpected error while retrieving history.", 500)
+        return error_response("Lỗi không mong muốn khi truy xuất lịch sử.", 500)
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -174,7 +174,7 @@ def register():
         password = data.get("password", "")
 
         if not username or not password:
-            return error_response("Username and password are required.", 400)
+            return error_response("Tên đăng nhập và mật khẩu là bắt buộc.", 400)
 
         db = SessionLocal()
         user = User(username=username)
@@ -185,12 +185,12 @@ def register():
         except IntegrityError:
             db.rollback()
             db.close()
-            return error_response("Username already exists.", 409)
+            return error_response("Tên đăng nhập đã tồn tại.", 409)
         db.close()
-        return custom_jsonify({"message": "Account created successfully."}), 201
+        return custom_jsonify({"message": "Tạo tài khoản thành công."}), 201
 
     except Exception:
-        return error_response("An error occurred during registration.", 500)
+        return error_response("Đã xảy ra lỗi trong quá trình đăng ký.", 500)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
