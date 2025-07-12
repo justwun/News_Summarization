@@ -108,6 +108,14 @@ def summarize_translate():
                 max_chunks=max_chunks
             )
             summary = translate(summary_vi, vi_en_tokenizer, vi_en_model)
+        elif source_lang == "en" and target_lang == "en":
+            translated_vi = translate(text, en_vi_tokenizer, en_vi_model)
+            summary_vi = summarize_long_text(
+                translated_vi, summarize_model, summarize_tokenizer,
+                **default_summary_params, 
+                max_chunks=max_chunks
+        )
+            summary = translate(summary_vi, vi_en_tokenizer, vi_en_model)
         else:
             summary = summarize_long_text(
                 text,
